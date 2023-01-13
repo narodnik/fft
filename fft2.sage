@@ -55,6 +55,10 @@ g = 2*X^2 + 110
 assert f.degree() < n/2
 assert g.degree() < n/2
 assert f.degree() + g.degree() < n
+print(f"f = {f}")
+print(f"g = {g}")
+print(f"fg = {f*g}")
+print()
 
 def vectorify(f):
     assert f.degree() < n
@@ -109,7 +113,6 @@ def pointwise_prod(fT, gT):
 
 print(f"deg(f) + deg(g) = {f.degree() + g.degree()}")
 fжg = convolution(f, g)
-print(f"fg = {f*g}")
 print(f"f☼g = {fжg}")
 assert fжg == f*g
 fжgT = vectorify(fжg)
@@ -118,6 +121,7 @@ DFT_ω_fжg = Vω * fжgT
 for i in range(n):
     assert fжg(X=ω^i) == f(ω^i)*g(ω^i)
 print(f"DFT_ω(f☼g) = {DFT_ω_fжg}")
-# This does not work:
-#assert DFT_ω_fжg == pointwise_prod(DFT_ω_f, DFT_ω_g)
+DFT_fg_prod = pointwise_prod(DFT_ω_f, DFT_ω_g)
+print(f"DFT_ω(f)·DFT_ω(g) = {DFT_fg_prod}")
+assert list(DFT_ω_fжg) == pointwise_prod(DFT_ω_f, DFT_ω_g)
 
