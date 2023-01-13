@@ -90,6 +90,9 @@ def nXn_vandermonde(n, ω):
     return Vω
 
 Vω = nXn_vandermonde(n, ω)
+Vω_inv = nXn_vandermonde(n, ω^-1)/n
+# Lemma: V_ω^{-1} = 1/n V_{ω^-1}
+assert Vω^-1 == Vω_inv
 
 DFT_ω_f = Vω * fT
 f_evals = [f(X=ω^i) for i in range(n)]
@@ -102,9 +105,6 @@ g_evals = [g(X=ω^i) for i in range(n)]
 print(f"DFT_ω(g) = {DFT_ω_g}")
 print(f"g(ω^i) = {g_evals}")
 print()
-
-# Lemma: V_ω^{-1} = 1/n V_{ω^-1}
-assert nXn_vandermonde(n, ω)^-1 == nXn_vandermonde(n, ω^-1)/n
 
 def convolution(f, g):
     return f*g % (X^n - 1)
@@ -121,7 +121,12 @@ DFT_ω_fжg = Vω * fжgT
 for i in range(n):
     assert fжg(X=ω^i) == f(ω^i)*g(ω^i)
 print(f"DFT_ω(f☼g) = {DFT_ω_fжg}")
-DFT_fg_prod = pointwise_prod(DFT_ω_f, DFT_ω_g)
+DFT_fg_prod = vector(pointwise_prod(DFT_ω_f, DFT_ω_g))
 print(f"DFT_ω(f)·DFT_ω(g) = {DFT_fg_prod}")
-assert list(DFT_ω_fжg) == pointwise_prod(DFT_ω_f, DFT_ω_g)
+assert DFT_ω_fжg == DFT_fg_prod
+
+inv_DFT_fg = Vω_inv * DFT_fg_prod
+fgT = vectorify(f*g)
+assert inv_DFT_fg == fgT
+print(f"DFT^-1(DFT_ω(f)·DFT_ω(g)) = {inv_DFT_fg}")
 
