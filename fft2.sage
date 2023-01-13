@@ -31,6 +31,9 @@ def find_nth_root_unity(p, n):
 
         break
 
+    # Apply reduction to [g] to get g̅
+    g = g % (p^N)
+
     assert (g^n) % (p^N) == 1
     return g, N
 
