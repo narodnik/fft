@@ -1,64 +1,68 @@
-#p = 199
-#n = 199^2
+# sage: w.multiplicative_order()
+# 1330
+# sage: 11^3 - 1
+# 1330
+# sage: K.<w> = GF(11^3, repr="int")
+# sage: w
+# 11
 
-p = 11
-n = 5
+p = 199
+# sage: factor(199^3 - 1)
+# 2 * 3^3 * 11 * 13267
+n = 27
 
-# We want a > nth root of unity
-# Calculate required field extension
 assert p.is_prime()
-assert n % 2 == 1
 
-def find_nth_root_unity(p, n):
-    found = False
-    for N in range(1, 100):
-        pNx_order = euler_phi(p^N)
+def find_ext_order(p, n):
+    N = 1
+    while True:
+        pNx_order = p^N - 1
 
-        # Does n divide the group order?
+        # Does n divide the group order 𝔽_{p^N}^×?
         if pNx_order % n == 0:
-            print(f"N = {N}")
-            found = True
-            break
-    assert found
+            return N
+
+        N += 1
+
+def find_nth_root_unity(K, n):
+    # It cannot be a quadratic residue if n is odd
+    assert n % 2 == 1
 
     # So there is an nth root of unity in p^N. Now we have to find it.
+    pNx_order = p^N - 1
 
-    while True:
-        pNx_order = euler_phi(p^N)
+    ω = K.gens()[0]
+    ω = ω^(pNx_order/n)
+    assert ω^n == 1
+    assert ω^(n - 1) != 1
 
-        a = Integers(p^N).random_element()
-        assert a^pNx_order == 1
+    return ω
 
-        g = a^(pNx_order/n)
+N = find_ext_order(p, n)
+print(f"N = {N}")
+K.<a> = GF(p^N, repr="int")
+ω = find_nth_root_unity(K, n)
 
-        # We don't check this is a primitive root of unity
+L.<X> = K[]
 
-        break
+f = 3*X^5 + 7*X^3 + X^2 + 4
+g = 2*X^5 + 2*X^4 + 2*X^2 + 110
 
-    # Apply reduction to [g]
-    g̅ = g % (p^N)
-    print(f"gen = {g̅}")
-
-    assert (g̅^n) % (p^N) == 1
-    return int(g̅), N
-
-ω, N = find_nth_root_unity(p, n)
-
-f = 3*x^5 + 7*x^3 + x^2 + 4
-g = 2*x^5 + 2*x^4 + 2*x^2 + 110
-
-fT = vector([3, 0, 7, 1, 4])
-gT = vector([2, 2, 0, 2, 110])
+row_padding = [0 for _ in range(n - 5)]
+fT = vector([4,   1, 7, 0, 3] + row_padding)
+gT = vector([110, 2, 0, 2, 2] + row_padding)
+assert len(fT) == len(gT) == n
 
 Vω = matrix([
-    [1,   1,   1,   1,   1],
-    [1, ω^1, ω^2, ω^3, ω^4],
-    [1, ω^2, ω^4, ω^1, ω^3],
-    [1, ω^3, ω^1, ω^4, ω^2],
-    [1, ω^4, ω^3, ω^2, ω^1],
-])
-DFT_ω = (Vω * fT) % (p^N)
+    [1,   1,   1,   1,   1] + row_padding,
+    [1, ω^1, ω^2, ω^3, ω^4] + row_padding,
+    [1, ω^2, ω^4, ω^1, ω^3] + row_padding,
+    [1, ω^3, ω^1, ω^4, ω^2] + row_padding,
+    [1, ω^4, ω^3, ω^2, ω^1] + row_padding,
+] + [[0 for _ in range(n)] for _ in range(n - 5)])
+DFT_ω = Vω * fT
 print(f"DFT_ω = {DFT_ω}")
-f_evals = [int(f(x=ω^i)) % (p^N) for i in range(n)]
+print()
+f_evals = [f(X=ω^i) for i in range(n)]
 print(f"f(ω^i) = {f_evals}")
 
