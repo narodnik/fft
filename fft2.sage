@@ -10,6 +10,7 @@ p = 199
 # sage: factor(199^3 - 1)
 # 2 * 3^3 * 11 * 13267
 n = 3^3
+n = 10
 
 assert p.is_prime()
 
@@ -26,7 +27,7 @@ def find_ext_order(p, n):
 
 def find_nth_root_unity(K, n):
     # It cannot be a quadratic residue if n is odd
-    assert n % 2 == 1
+    #assert n % 2 == 1
 
     # So there is an nth root of unity in p^N. Now we have to find it.
     pNx_order = p^N - 1
@@ -48,14 +49,20 @@ L.<X> = K[]
 
 f = 3*X^4 + 7*X^3 + X^2 + 4
 g = 2*X^4 + 2*X^2 + 110
-assert f.degree() * g.degree() < n
+assert f.degree() + g.degree() < n
 
-fT = vector([f[i] for i in range(f.degree())] +
-            # Zero padding
-            [0 for _ in range(n - f.degree())])
-gT = vector([g[i] for i in range(g.degree())] +
-            # Zero padding
-            [0 for _ in range(n - f.degree())])
+def vectorify(f):
+    assert f.degree() < n
+    fT = vector([f[i] for i in range(f.degree() + 1)] +
+                # Zero padding
+                [0 for _ in range(n - f.degree() - 1)])
+    assert len(fT) == n
+    # Just check decomposed polynomial is in the correct order
+    assert sum([fT[i]*X^i for i in range(n)]) == f
+    return fT
+
+fT = vectorify(f)
+gT = vectorify(g)
 
 def nXn_vandermonde(n, ω):
     # We hardcode this one so you know what is looks like
@@ -91,17 +98,16 @@ print()
 assert nXn_vandermonde(n, ω)^-1 == nXn_vandermonde(n, ω^-1)/n
 
 def convolution(f, g):
-    return f*g % (X^(2*n - 1))
+    return f*g % (X^(n + 1))
 def pointwise_prod(fT, gT):
     return [a_i*b_i for a_i, b_i in zip(fT, gT)]
 
+print(f"deg(f) + deg(g) = {f.degree() + g.degree()}")
 fжg = convolution(f, g)
+print(f"fg = {f*g}")
+print(f"f☼g = {fжg}")
 assert fжg == f*g
-assert fжg.degree() < n
-fжgT = vector([fжg[i] for i in range(fжg.degree())] +
-              [0 for _ in range(n - fжg.degree())])
-# Just check decomposed polynomial is in the correct order
-assert sum([fжg[i]*X^i for i in range(2*n - 1)]) == fжg
+fжgT = vectorify(fжg)
 
 DFT_ω_fжg = Vω * fжgT
 for i in range(n):
