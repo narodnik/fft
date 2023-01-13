@@ -103,7 +103,7 @@ print()
 assert nXn_vandermonde(n, ω)^-1 == nXn_vandermonde(n, ω^-1)/n
 
 def convolution(f, g):
-    return f*g % (X^(n + 1))
+    return f*g % (X^n - 1)
 def pointwise_prod(fT, gT):
     return [a_i*b_i for a_i, b_i in zip(fT, gT)]
 
