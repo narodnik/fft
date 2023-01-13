@@ -28,8 +28,10 @@ def find_nth_root_unity(p, n):
         print(f"g = {g}")
 
         # We don't check this is a primitive root of unity
+
         break
 
+    assert (g^n) % (p^N) == 1
     return g, N
 
 g, N = find_nth_root_unity(p, n)
