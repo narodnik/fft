@@ -20,8 +20,7 @@ def find_nth_root_unity(K, n):
 
     # So there is an nth root of unity in p^N. Now we have to find it.
     pNx_order = p^N - 1
-
-    ω = K.gens()[0]
+    ω = K.multiplicative_generator()
     ω = ω^(pNx_order/n)
     assert ω^n == 1
     assert ω^(n - 1) != 1
